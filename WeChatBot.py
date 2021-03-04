@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Zeng LH
-@contact: 893843891@qq.com
+@author: WhyFear
 @software: pycharm
 @file: WeChatBot.py
 @time: 2019/9/10 0010 16:08

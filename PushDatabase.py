@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Zeng LH
-@contact: 893843891@qq.com
+@author: WhyFear
 @software: pycharm
 @file: PushDatabase.py
 @time: 2019/5/5 0005 19:31
