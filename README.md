@@ -49,9 +49,9 @@ pip install -r requirements.txt
 
 7.  点击 t.me/pakros_push_bot 链接关注自己的机器人。
 
-8.  虽然发送一条消息。
+8.  随便发送一条消息。
 
-9.  打开浏览器，打开 https://api.telegram.org/bot#TOKEN#/getUpdates ，将#TOKEN#替换为刚才获取到的TOKEN（bot不要删了）
+9.  浏览器中打开 https://api.telegram.org/bot#TOKEN#/getUpdates ，将#TOKEN#替换为刚才获取到的TOKEN（bot不要删了）
 
 10.  将红框内的id填写入.env文件的TELEGRAM_CHAT_ID一项中。
 
@@ -66,8 +66,8 @@ pip install -r requirements.txt
 1.  用电脑打开[企业微信官网](https://work.weixin.qq.com/)，注册一个企业
 2.  注册成功后，点「管理企业」进入管理界面，选择「应用管理」 → 「自建」 → 「创建应用」
 3.  应用名称随便填写，可见范围选择公司名。
-4.  创建完成后进入应用详情页，可以得到应用ID( agentid )，应用Secret( secret )，复制并分别填到WECOM_AGENTID、WECOM_SECRET。
-5.  进入「[我的企业](https://work.weixin.qq.com/wework_admin/frame#profile)」页面，拉到最下边，可以看到企业ID，复制并填到WECOM_COMPANYID。推送UID直接填@all ，推送给公司全员。
+4.  创建完成后进入应用详情页，可以得到应用ID( agentid )，应用Secret( secret )，复制并分别填到.env文件中的WECOM_AGENTID、WECOM_SECRET。
+5.  进入「[我的企业](https://work.weixin.qq.com/wework_admin/frame#profile)」页面，拉到最下边，可以看到企业ID，复制并填到.env文件中的WECOM_COMPANYID。推送UID直接填@all ，推送给公司全员。
 6.  进入「我的企业」 → 「[微信插件](https://work.weixin.qq.com/wework_admin/frame#profile/wxPlugin)」，拉到下边扫描二维码，关注以后即可收到推送的消息。
 
 填写完三个key后，企业微信推送的设置也完成了。
@@ -106,7 +106,7 @@ python3 PushDatabase.py
 如果使用caddy作为前置代理，可以参考我的配置：
 
 ```shell
-https://push.pakro.top {
+https://your.website.name {
   gzip
   tls ***@***.com
   proxy / localhost:1234 {
@@ -128,7 +128,9 @@ python3 MyServerJiang.py
 
 1.  在telegram机器人聊天界面输入/myuuid，查看是否回复
 
-2.  浏览器中输入：https://yourip/?UUID={UUID}&text={HELLO}&desp={WORLD} 
+    >   ![image-20210311215901817](README/image-20210311215901817.png)
+
+3.  浏览器中输入：https://yourip/?UUID={UUID}&text={HELLO}&desp={WORLD} 
 
     将UUID改为你自己的UUID，查看telegram和微信是否能接收到消息，并且浏览器也会显示{"status":true}。
 
