@@ -23,6 +23,7 @@ WECOM_AGENTID = os.getenv("WECOM_AGENTID")
 WECOM_SECRET = os.getenv("WECOM_SECRET")
 WECOM_COMPANYID = os.getenv("WECOM_COMPANYID")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MY_UUID = os.getenv("MY_UUID")
 
 
@@ -135,7 +136,7 @@ def register() -> dict:
     初始化时直接把我设为管理员账户
     :return:
     """
-    user_dict = {"UUID": MY_UUID, "telegram": '132310224', "wechat": WECHAT_KEY,
+    user_dict = {"UUID": MY_UUID, "telegram": TELEGRAM_CHAT_ID, "wechat": WECHAT_KEY,
                  "wecom_agent_id": WECOM_AGENTID, "wecom_secret": WECOM_SECRET,
                  "wecom_company_id": WECOM_COMPANYID}
     try:
