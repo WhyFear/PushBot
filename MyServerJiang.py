@@ -11,12 +11,7 @@ from multiprocessing import Process
 
 from flask import Flask, request, jsonify
 
-try:
-    import TelegramBot
-    import WeChatBot
-except:
-    from PushBot import TelegramBot
-    from PushBot import WeChatBot
+from bottom import WeChatBot, TelegramBot
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -138,6 +133,7 @@ def send_message(message) -> dict:
                 result["message"] = "消息发送失败，请检查是否UUID输入错误，或者是远端服务器错误"
     else:
         result["message"] = "缺少必要的参数"
+    # todo 返回错误信息时 传递真正错误
     return result
 
 

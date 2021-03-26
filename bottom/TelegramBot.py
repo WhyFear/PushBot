@@ -14,10 +14,8 @@ import requests
 import telegram
 from dotenv import load_dotenv
 
-try:
-    from PushDatabase import pg_db, User, search
-except:
-    from .PushDatabase import pg_db, User, search
+from PushDatabase import pg_db, User, search
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 load_dotenv(encoding='utf8')
@@ -165,7 +163,7 @@ def error_handler(update, context, error):
 def test(update, context):
     """
     重新生成UUID
-    :param bot:
+    :param bottom:
     :param update:
     :return:
     """

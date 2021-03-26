@@ -4,22 +4,23 @@
 @software: pycharm
 @file: WeChatBot.py
 @time: 2019/9/10 0010 16:08
-@desc:
+@desc: 企业微信推送底层，只负责推送
 """
 import os
 import json
+import time
 import requests
+import MyErrors
 from dotenv import load_dotenv
 
-try:
-    from PushDatabase import search
-except:
-    from .PushDatabase import search
+from PushDatabase import search
 
 load_dotenv(encoding='utf8')  # 读取本地变量
 WECHAT_KEY = os.getenv("WECHAT_KEY")
 WEBHOOK_URL = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='
 WECOM_URL = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token='
+access_token_str = ""
+access_token_get_time = time.time()
 
 
 def push_message(url, post_data):
@@ -30,6 +31,7 @@ def push_message(url, post_data):
         return False
 
 
+# deprecated
 def wecom_push_bot(user_uuid, text, desp=None):
     """
     企业微信群推送机器人
@@ -65,11 +67,7 @@ def wecom_app_bot(user_uuid, text, desp=None):
     is_send = False
     result = search(user_uuid=user_uuid)
     if result["is_in_the_database"]:
-        wecom_company_id = result["wecom_company_id"]
-        wecom_secret = result["wecom_secret"]
-        access_token = requests.get(
-            f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={wecom_company_id}&corpsecret={wecom_secret}')
-        access_token = json.loads(access_token.text)
+        access_token = get_wecom_access_token(result["wecom_company_id"], result["wecom_secret"])
         if access_token["errcode"] == 0:
             access_token = access_token["access_token"]
             url = WECOM_URL + access_token
@@ -89,6 +87,36 @@ def wecom_app_bot(user_uuid, text, desp=None):
         else:
             print(access_token)
     return is_send
+
+
+def get_wecom_access_token(wecom_company_id, wecom_secret) -> dict:
+    """
+    获取access_token,并持久化
+    """
+    global access_token_str, access_token_get_time
+    access_token = dict()
+    try:
+        if access_token_str == "" or time.time() - access_token_get_time > 7000:  # 7200秒，为了保证可用，设置为7000秒
+            access_token_content = requests.get(
+                f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={wecom_company_id}&corpsecret={wecom_secret}')
+            access_token = json.loads(access_token_content.text)
+            if access_token["errcode"] == 0:
+                access_token_str = access_token["access_token"]
+                access_token_get_time = time.time()
+            else:
+                raise MyErrors.GetWecomAccessTokenErrors
+        else:
+            access_token["errcode"] = 0
+            access_token["access_token"] = access_token_str
+    except MyErrors.GetWecomAccessTokenErrors:
+        # 不处理，直接返回错误
+        pass
+    except Exception as e:
+        access_token["errcode"] = 1
+        access_token["message"] = e
+        print(e)
+    finally:
+        return access_token
 
 
 if __name__ == '__main__':
