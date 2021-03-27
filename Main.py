@@ -2,16 +2,16 @@
 """
 @author: WhyFear
 @software: pycharm
-@file: MyServerJiang.py
+@file: Main.py
 @time: 2019/5/5 0005 17:05
 @desc:
 """
 import logging
 from multiprocessing import Process
-
 from flask import Flask, request, jsonify
 
-from bottom import WeChatBot, TelegramBot
+from bin import TelegramBot
+from bottom import WeChatPushBot, TelegramPushBot
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def wechat():
             send_text = """%s\n%s""" % (text, desp)
         else:
             send_text = text
-        result["status"] = WeChatBot.push_message(wechat_key, send_text)
+        result["status"] = WeChatPushBot.push_message(wechat_key, send_text)
     except Exception as e:
         logger.warning(e)
         return e
@@ -98,21 +98,21 @@ def send_message(message) -> dict:
     if message["UUID"] and message["text"]:  # 如果没有这两个参数，直接返回
         if message["to"] == "telegram":
             if "desp" in message:
-                is_send = TelegramBot.push_bot(message["UUID"], message["text"], message["desp"])
+                is_send = TelegramPushBot.push_bot(message["UUID"], message["text"], message["desp"])
             else:
-                is_send = TelegramBot.push_bot(message["UUID"], message["text"])
+                is_send = TelegramPushBot.push_bot(message["UUID"], message["text"])
         elif message["to"] == "wechat":
             if "desp" in message:
-                is_send = WeChatBot.wecom_app_bot(message["UUID"], message["text"], message["desp"])
+                is_send = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message["desp"])
             else:
-                is_send = WeChatBot.wecom_app_bot(message["UUID"], message["text"])
+                is_send = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"])
         elif message["to"] == "all" or not message["to"]:  # 默认发送到all
             if "desp" in message:
-                is_send_telegram = TelegramBot.push_bot(message["UUID"], message["text"], message["desp"])
-                is_send_wechat = WeChatBot.wecom_app_bot(message["UUID"], message["text"], message["desp"])
+                is_send_telegram = TelegramPushBot.push_bot(message["UUID"], message["text"], message["desp"])
+                is_send_wechat = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message["desp"])
             else:
-                is_send_telegram = TelegramBot.push_bot(message["UUID"], message["text"])
-                is_send_wechat = WeChatBot.wecom_app_bot(message["UUID"], message["text"])
+                is_send_telegram = TelegramPushBot.push_bot(message["UUID"], message["text"])
+                is_send_wechat = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"])
 
             if is_send_wechat and is_send_telegram:
                 is_send = True

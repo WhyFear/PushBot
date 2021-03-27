@@ -10,7 +10,7 @@ import os
 from peewee import *
 from dotenv import load_dotenv
 
-load_dotenv(encoding='utf8')
+load_dotenv(encoding='utf-8')
 
 HOST = os.getenv("HOST")
 PORT = os.getenv("PORT")

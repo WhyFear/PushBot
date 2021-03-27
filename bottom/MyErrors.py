@@ -5,7 +5,7 @@
 @software: pycharm
 @file: MyErrors.py
 @time: 2021/3/26 0026 18:53
-@desc:
+@desc: 所有自定义错误类
 """
 
 

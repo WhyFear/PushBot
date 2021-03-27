@@ -121,7 +121,7 @@ https://your.website.name {
 执行下面的命令，测试启动是否正常。
 
 ```shell
-python3 MyServerJiang.py
+python3 Main.py
 ```
 
 如果没有报错，那么有以下几种测试方法。
@@ -188,7 +188,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/usr/local/python3/bin/python3.7 /root/PushBot/MyServerJiang.py
+ExecStart=/usr/local/python3/bin/python3.7 /root/PushBot/Main.py
 
 [Install]
 WantedBy=multi-user.target

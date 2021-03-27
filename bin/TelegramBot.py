@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: WhyFear
+@author: Zeng LH
+@contact: 893843891@qq.com
 @software: pycharm
 @file: TelegramBot.py
-@time: 2019/5/5 0005 19:51
+@time: 2021/3/27 0027 17:36
 @desc:
 """
 import re
@@ -13,12 +14,11 @@ import logging
 import requests
 import telegram
 from dotenv import load_dotenv
-
-from PushDatabase import pg_db, User, search
-
+from bottom import TelegramPushBot
+from bottom.PushDatabase import search
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
-load_dotenv(encoding='utf8')
+load_dotenv(encoding='utf-8')
 token = os.getenv("TELEGRAM_BOT_TOKEN")
 tele_bot = telegram.Bot(token=token)
 
@@ -27,20 +27,6 @@ logger = logging.getLogger(__name__)
 
 NORMAL, CHANGE_UUID = range(2)  # 状态码
 FLAG = NORMAL
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-def register(user_uuid, chat_id) -> dict:
-    user_dict = {"UUID": user_uuid, "telegram": chat_id}
-    try:
-        pg_db.connect()
-        with pg_db.atomic():  # 插入数据
-            User.create(**user_dict)
-        return {"result": True}
-    except Exception as e:
-        return {"result": False, "message": e}
-    finally:
-        pg_db.close()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -78,7 +64,7 @@ def new_user(update, context):
 
     if is_new_user:
         new_uuid = str(uuid.uuid4())
-        register_result = register(new_uuid, chat_id)
+        register_result = TelegramPushBot.register(new_uuid, chat_id)
         if register_result["result"]:
             text = """欢迎使用Pakro's Push Bot, 请保管好您的UUID\n%s\n具体使用方法请看 /help""" % new_uuid
         else:
@@ -104,16 +90,6 @@ def my_uuid(update, context):
         user_uuid = result["user_uuid"]
         text = """您的UUID如下：\n%s\n请妥善保管好您的UUID""" % user_uuid
     context.bot.send_message(chat_id=chat_id, text=text)
-
-
-def push_message(chat_id, text):
-    """
-    主动向用户推送消息
-    :param chat_id: 用户id
-    :param text: 推送的消息内容
-    :return: no return
-    """
-    tele_bot.send_message(chat_id=chat_id, text=text)
 
 
 def echo(update, context):
@@ -163,7 +139,6 @@ def error_handler(update, context, error):
 def test(update, context):
     """
     重新生成UUID
-    :param bottom:
     :param update:
     :return:
     """
@@ -176,7 +151,7 @@ def test(update, context):
 
     if is_new_user:
         new_uuid = str(uuid.uuid4())
-        register_result = register(new_uuid, chat_id)
+        register_result = TelegramPushBot.register(new_uuid, chat_id)
         if register_result["result"]:
             text = """欢迎使用Pakro's Push Bot, 请保管好您的UUID\n%s\n具体使用方法请看 /help""" % new_uuid
         else:
@@ -256,22 +231,6 @@ def stop_register(update, context):
     global FLAG
     FLAG = NORMAL
     update.message.reply_text("注册流程结束！")
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-def push_bot(user_uuid, text, desp=None):
-    is_send = False
-    result = search(user_uuid=user_uuid)
-    if result["is_in_the_database"]:
-        chat_id = result["chat_id"]
-        if desp:
-            send_text = """%s\n%s""" % (text, desp)
-        else:
-            send_text = text
-        push_message(chat_id, send_text)
-        is_send = True
-    return is_send
 
 
 def main():

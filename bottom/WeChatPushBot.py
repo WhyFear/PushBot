@@ -2,7 +2,7 @@
 """
 @author: WhyFear
 @software: pycharm
-@file: WeChatBot.py
+@file: WeChatPushBot.py
 @time: 2019/9/10 0010 16:08
 @desc: 企业微信推送底层，只负责推送
 """
@@ -10,12 +10,12 @@ import os
 import json
 import time
 import requests
-import MyErrors
+from bottom import MyErrors
 from dotenv import load_dotenv
 
 from PushDatabase import search
 
-load_dotenv(encoding='utf8')  # 读取本地变量
+load_dotenv(encoding='utf-8')  # 读取本地变量
 WECHAT_KEY = os.getenv("WECHAT_KEY")
 WEBHOOK_URL = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='
 WECOM_URL = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token='
