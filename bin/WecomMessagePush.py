@@ -8,12 +8,9 @@
 @desc: 向指定用户推送消息
 """
 import os
-import json
 import logging
-import requests
 from dotenv import load_dotenv
 from bottom import WeChatPushBot
-from bottom.PushDatabase import search
 
 load_dotenv(encoding='utf-8')  # 读取本地变量
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -21,36 +18,12 @@ logger = logging.getLogger(__name__)
 MY_UUID = os.getenv("MY_UUID")
 
 
-def get_user_list() -> list:
-    """
-    获取企业中所有员工的信息
-    :return: list格式，除非正常获取到员工信息，否则直接返回空列表
-    """
-    user_list = list()
-    result = search(user_uuid=MY_UUID)
-    if result["is_in_the_database"]:
-        access_token = WeChatPushBot.get_wecom_access_token(result["wecom_company_id"], result["wecom_secret"])
-        if access_token["errcode"] == 0:
-            access_token = access_token["access_token"]
-            get_user_list_url = "https://qyapi.weixin.qq.com/cgi-bin/user/simplelist?department_id=1&fetch_child=1&access_token=" + access_token
-            # 错误处理
-            try:
-                user_list_content = requests.get(get_user_list_url).content
-                user_list_json = json.loads(user_list_content)
-                if user_list_json["errcode"] == 0:
-                    for user_json in user_list_json["userlist"]:
-                        user_list.append(user_json["userid"])
-                    return user_list
-                else:
-                    print(user_list_json["errcode"], " ", user_list_json["errmsg"])
-            except Exception as e:
-                print(e)
-        else:
-            print(access_token)
-    return user_list
-
-
 def push_message_to_users():
+    """
+    推送消息给企业微信的指定成员，也可以推送给所有成员，为了用户误操作时不重复进行io操作，多写了很多冗余代码来保证循环
+    :return: no return
+    """
+
     def input_to_list(users_list, send_to=None):
         """
         将用户输入的数字信息转换为列表格式
@@ -73,7 +46,7 @@ def push_message_to_users():
             to_user = "|".join(temp_list)
         return to_user
 
-    user_list = get_user_list()  # 获取员工列表是重io操作，后续的操作应该尽量不会让用户退出
+    user_list = WeChatPushBot.get_user_list(MY_UUID)  # 获取员工列表是重io操作，后续的操作应该尽量不会让用户退出
 
     if user_list:
         user_list.insert(0, "@all")
