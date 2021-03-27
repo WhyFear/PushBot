@@ -24,7 +24,7 @@ MY_UUID = os.getenv("MY_UUID")
 def get_user_list() -> list:
     """
     获取企业中所有员工的信息
-    @return: list格式，除非正常获取到员工信息，否则直接返回空列表
+    :return: list格式，除非正常获取到员工信息，否则直接返回空列表
     """
     user_list = list()
     result = search(user_uuid=MY_UUID)
@@ -54,9 +54,9 @@ def push_message_to_users():
     def input_to_list(users_list, send_to=None):
         """
         将用户输入的数字信息转换为列表格式
-        @param send_to:
-        @param users_list:
-        @return:
+        :param send_to:
+        :param users_list:
+        :return:
         """
         to_user = "@all"
         if not send_to:
