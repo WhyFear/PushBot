@@ -12,10 +12,10 @@ from dotenv import load_dotenv
 
 load_dotenv(encoding='utf-8')
 
-HOST = os.getenv("HOST")
-PORT = os.getenv("PORT")
-USERNAME = os.getenv("USERNAME")
-PASSWD = os.getenv("PASSWD")
+HOST = os.getenv("DB_HOST")
+PORT = os.getenv("DB_PORT")
+USERNAME = os.getenv("DB_USERNAME")
+PASSWD = os.getenv("DB_PASSWD")
 pg_db = PostgresqlDatabase('pushserverdb', **{'host': HOST, 'port': PORT, 'user': USERNAME, 'password': PASSWD})
 
 WECHAT_KEY = os.getenv("WECHAT_KEY")

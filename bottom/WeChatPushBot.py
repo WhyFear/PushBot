@@ -13,7 +13,10 @@ import requests
 from bottom import MyErrors
 from dotenv import load_dotenv
 
-from PushDatabase import search
+try:
+    from PushDatabase import search
+except:
+    from .PushDatabase import search
 
 load_dotenv(encoding='utf-8')  # 读取本地变量
 WECHAT_KEY = os.getenv("WECHAT_KEY")
@@ -28,6 +31,7 @@ def push_message(url, post_data):
     if json.loads(status.text)["errcode"] == 0:
         return True
     else:
+        print(status.text)
         return False
 
 
@@ -57,7 +61,7 @@ def wecom_push_bot(user_uuid, text, desp=None):
     return is_send
 
 
-def wecom_app_bot(user_uuid, text, desp=None):
+def wecom_app_bot(user_uuid, text, desp=None, to_user="@all"):
     """
     企业微信应用消息机器人，使用微信插件后，可以在微信中收取该bot的消息。
     流程：
@@ -75,14 +79,14 @@ def wecom_app_bot(user_uuid, text, desp=None):
                 send_text = """%s\n%s""" % (text, desp)
             else:
                 send_text = text
-            post_data = """{
-                           "touser" : "@all",
+            post_data = '''{
+                           "touser" : "%s",
                            "msgtype" : "text",
                            "agentid" : %s,
                            "text" : {
                                "content" : "%s"
                            }
-                        }""" % (result["wecom_agent_id"], send_text)
+                        }''' % (to_user, result["wecom_agent_id"], send_text)
             is_send = push_message(url, post_data)
         else:
             print(access_token)
