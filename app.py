@@ -8,15 +8,24 @@
 """
 import asyncio
 import logging
+
+from asgiref.sync import async_to_sync
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 
-from bottom import WeChatPushBot, TelegramPushBot
+from bottom import WeChatPushBot
+from bottom.TelegramPushBot import TelegramPushBot as tpb
 
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# 设置超时时间（秒）
+TIMEOUT = 10
+
+# 创建 TelegramPushBot 实例
+telegram_bot = tpb()
 
 
 @app.route('/', methods=["GET", "POST"])
@@ -35,13 +44,15 @@ def home():
     message["desp"] = request.args.get('desp')
     message["to"] = request.args.get('to')
     try:
-        status = asyncio.run(send_message(message))
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        status = loop.run_until_complete(send_message(message))
+        loop.close()
         return jsonify(status)
     except Exception as e:
-        logging.warning(f'非法消息: {message}, 错误信息: {e}')
+        logging.exception(f'非法消息: {message}, 错误信息: {e}')
+        return jsonify({"status": False, "message": f"An error occurred: {e}"})
 
-
-# ... 其他代码 ...
 
 async def send_message(message) -> dict:
     """
@@ -55,33 +66,63 @@ async def send_message(message) -> dict:
         return result
 
     if message["to"] == "telegram":
-        is_send = await TelegramPushBot.push_bot(message["UUID"], message["text"], message.get("desp"))
+        try:
+            # 使用全局的 telegram_bot 实例发送消息
+            is_send = await asyncio.wait_for(
+                telegram_bot.push_bot(message["UUID"], message["text"], message.get("desp")), timeout=TIMEOUT)
+        except asyncio.TimeoutError:
+            result["message"] = "Telegram消息发送超时"
+            return result
+        except Exception as e:
+            result["message"] = f"Telegram 消息发送失败: {e}"
+            return result
     elif message["to"] == "wechat":
-        is_send = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message.get("desp"))
+        try:
+            is_send = await asyncio.wait_for(
+                WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message.get("desp")), timeout=TIMEOUT)
+        except asyncio.TimeoutError:
+            result["message"] = "WeChat消息发送超时"
+            return result
+        except Exception as e:
+            result["message"] = f"WeChat 消息发送失败: {e}"
+            return result
     elif message["to"] == "all" or not message["to"]:
-        is_send_telegram = await TelegramPushBot.push_bot(message["UUID"], message["text"], message.get("desp"))
-        is_send_wechat = WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message.get("desp"))
+        is_send_telegram = False
+        is_send_wechat = False
+        try:
+            # 使用全局的 telegram_bot 实例发送消息
+            is_send_telegram, is_send_wechat = await asyncio.gather(
+                asyncio.wait_for(
+                    telegram_bot.push_bot(message["UUID"], message["text"], message.get("desp")), timeout=TIMEOUT),
+                asyncio.wait_for(
+                    WeChatPushBot.wecom_app_bot(message["UUID"], message["text"], message.get("desp")), timeout=TIMEOUT)
+            )
+        except asyncio.TimeoutError:
+            result["message"] = "消息发送超时"
+            return result
+        except Exception as e:
+            result["message"] = f"消息发送失败: {e}"
+            return result
         if is_send_wechat and is_send_telegram:
             is_send = True
         else:
             if not is_send_wechat and not is_send_telegram:
-                result["message"] = "telegram 和 wechat 均发送失败，可能是服务器错误"
+                result["message"] = "Telegram 和 WeChat 均发送失败，可能是服务器错误"
             elif not is_send_telegram:
-                result["message"] = "telegram发送失败"
+                result["message"] = "Telegram 发送失败"
             elif not is_send_wechat:
-                result["message"] = "wechat发送失败"
+                result["message"] = "WeChat 发送失败"
     else:
-        result["message"] = "to参数错误，请修改。"
+        result["message"] = "to 参数错误，请修改。"
+        return result
 
     if is_send:
         result["status"] = True
     else:
         if not result["message"]:
-            result["message"] = "消息发送失败，请检查是否UUID输入错误，或者是远端服务器错误"
+            result["message"] = "消息发送失败，请检查是否 UUID 输入错误，或者是远端服务器错误"
     return result
 
-
-# ... 其他代码 ...
 
 if __name__ == '__main__':
     load_dotenv(dotenv_path=".env", encoding="utf-8")

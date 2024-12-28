@@ -63,7 +63,7 @@ def wecom_push_bot(user_uuid, text, desp=None):
     return is_send
 
 
-def wecom_app_bot(user_uuid, text, desp=None, to_user="@all"):
+async def wecom_app_bot(user_uuid, text, desp=None, to_user="@all"):
     """
     企业微信应用消息机器人，使用微信插件后，可以在微信中收取该bot的消息。
     流程：
