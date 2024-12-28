@@ -33,55 +33,38 @@ def push_message_to_users():
         """
         to_user = "@all"
         if not send_to:
-            send_to = input("\n请输入您想要推送的对象编号，以逗号分隔，错误输入会被忽略：").split()
+            send_to = input("\n请输入您想要推送的对象编号，以逗号分隔，错误输入会被忽略：").split(',')
         if "0" not in send_to:
-            temp_list = list()
+            temp_list = []
             for str_num in send_to:
                 try:
-                    temp_list.append(users_list[int(str_num)])
+                    # 使用 int 转换前先去除空格
+                    num = int(str_num.strip())
+                    temp_list.append(users_list[num])
                 except (ValueError, IndexError):
-                    continue
+                    print(f"无效的编号：{str_num}")
                 except Exception as e:
-                    print(e)
+                    print(f"发生错误：{e}")
             to_user = "|".join(temp_list)
         return to_user
 
     user_list = WeChatPushBot.get_user_list(MY_UUID)  # 获取员工列表是重io操作，后续的操作应该尽量不会让用户退出
 
-    if user_list:
-        user_list.insert(0, "@all")
-        for i in range(len(user_list)):
-            print(i, ":", user_list[i])  # 打印所有员工信息
-
-        to_user = input_to_list(user_list)
-        confirm_user_list = input(f"\n您想要发送信息给以下员工 {to_user}\n确认请回车,如要修改请直接输入员工编号，取消请输入 exit :")
-
-        if confirm_user_list == "exit":
-            print("用户取消了本次操作")
-        else:
-            while confirm_user_list != "" and confirm_user_list != "exit":  # 用户没有输入回车也没有输入exit
-                to_user = input_to_list(user_list, confirm_user_list)
-                confirm_user_list = input(f"\n您想要发送信息给以下员工 {to_user}\n确认请回车,如要修改请直接输入员工编号，取消请输入 exit :")
-            if confirm_user_list == "exit":
-                print("用户取消了本次操作")
-            else:
-                message = input("\n请输入您想要发送的消息：")
-                confirm_message = input(f"\n您想要发送的消息如下：{message}\n确定发送吗？,如要修改请直接输入修改内容，退出请输入 exit :")
-                if confirm_message == "exit":
-                    print("用户取消了本次操作")
-                else:
-                    while confirm_message != "" and confirm_message != "exit":
-                        message = confirm_message
-                        confirm_message = input(f"\n您想要发送的消息如下：{message}\n确定发送吗？,如要修改请直接输入修改内容：")
-                    if confirm_message == "exit":
-                        print("用户取消了本次操作")
-                    else:
-                        if WeChatPushBot.wecom_app_bot(user_uuid=MY_UUID, text=message, to_user=to_user):
-                            print("发送成功")
-                        else:
-                            print("未知错误")
-    else:
+    if not user_list:
         print("没有获取到员工信息")
+        return
+
+    user_list.insert(0, "@all")
+    for i, user in enumerate(user_list):
+        print(f"{i}: {user}")  # 打印所有员工信息
+
+    to_user = input_to_list(user_list)
+    message = input("\n请输入您想要发送的消息：")
+
+    if WeChatPushBot.wecom_app_bot(user_uuid=MY_UUID, text=message, to_user=to_user):
+        print("发送成功")
+    else:
+        print("未知错误")
 
 
 if __name__ == '__main__':
