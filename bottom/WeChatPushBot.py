@@ -6,12 +6,14 @@
 @time: 2019/9/10 0010 16:08
 @desc: 企业微信推送底层，只负责推送
 """
-import os
 import json
+import os
 import time
+
 import requests
-from bottom import MyErrors
 from dotenv import load_dotenv
+
+from bottom import MyErrors
 
 try:
     from PushDatabase import search
