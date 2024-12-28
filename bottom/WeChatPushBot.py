@@ -92,6 +92,7 @@ async def wecom_app_bot(user_uuid, text, desp=None, to_user="@all"):
             is_send = push_message(url, post_data)
         else:
             print(access_token)
+            is_send = False  # 获取 access_token 失败也应该返回 False
     return is_send
 
 
@@ -152,22 +153,3 @@ def get_user_list(user_uuid) -> list:
         else:
             print(access_token)
     return user_list
-
-
-if __name__ == '__main__':
-    # text = "TEST"
-    # desp = "THIS IS A TEST MESSAGE"
-    # send_text = """%s\n%s""" % (text, desp)
-    # send_text = send_text.encode("utf-8")
-    # post_data = """{
-    #                "touser" : "@all",
-    #                "msgtype" : "text",
-    #                "agentid" : %s,
-    #                "text" : {
-    #                    "content" : "中文中文%s"
-    #                }
-    #             }""" % (os.getenv("WECOM_AGENTID"), send_text)
-    # access_token = '' # 用时获取
-    # url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=' + access_token
-    # push_message(url, post_data)
-    pass

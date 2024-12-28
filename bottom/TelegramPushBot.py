@@ -32,6 +32,18 @@ def register(user_uuid, chat_id) -> dict:
     finally:
         pg_db.close()
 
+
+def search_chat_id(user_uuid) -> str:
+    """
+    根据用户 UUID 查找对应的 chat_id
+    """
+    result = search(user_uuid=user_uuid)
+    chat_id = None
+    if result["is_in_the_database"]:
+        chat_id = result["chat_id"]
+    return chat_id
+
+
 class TelegramPushBot:
     def __init__(self):
         """
@@ -45,17 +57,7 @@ class TelegramPushBot:
             request = None
             logger.info("Telegram: 未使用代理")
 
-        self.bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"), request=request)
-
-    def search_chat_id(self, user_uuid) -> str:
-        """
-        根据用户 UUID 查找对应的 chat_id
-        """
-        result = search(user_uuid=user_uuid)
-        chat_id = None
-        if result["is_in_the_database"]:
-            chat_id = result["chat_id"]
-        return chat_id
+        self.bot = telegram.Bot(token=token, request=request)
 
     async def push_bot(self, user_uuid, text, desp=None):
         """
@@ -67,7 +69,7 @@ class TelegramPushBot:
         """
         try:
             # 异步发送消息
-            chat_id = self.search_chat_id(user_uuid)
+            chat_id = search_chat_id(user_uuid)
             await self.bot.send_message(chat_id=chat_id, text=text)
             logger.info(f"Telegram: Successfully sent message to {user_uuid}")
             return True
