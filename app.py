@@ -20,55 +20,6 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# 设置超时时间（秒）
-TIMEOUT = 10
-
-# 创建 TelegramPushBot 实例
-telegram_bot = tpb()
-
-
-@app.route('/', methods=["GET", "POST"])
-def home():
-    """
-    #todo post功能完善
-    :UUID: 用户唯一ID
-    :text: 待发送消息
-    :desp: 消息描述,可不填
-    :to: 发送到:wechat、telegram或者all, 默认telegram
-    :return:
-    """
-    message = dict({})
-    message["UUID"] = request.args.get('uuid')
-    message["text"] = request.args.get('text')
-    message["desp"] = request.args.get('desp')
-    message["to"] = request.args.get('to')
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        status = loop.run_until_complete(send_message(message))
-        loop.close()
-        return jsonify(status)
-    except Exception as e:
-        logging.exception(f'非法消息: {message}, 错误信息: {e}')
-        return jsonify({"status": False, "message": f"An error occurred: {e}"})
-
-
-async def send_message(message) -> dict:
-    """
-    推送消息过去
-    :param message: 见home函数
-    :return:
-    """
-    if not message.get("UUID") or not message.get("text"):
-        return {"status": False, "message": "缺少必要的参数"}
-
-    sender = MessageSenderFactory.get_sender(message["to"])
-    if sender:
-        task = asyncio.create_task(sender.send(message))
-        return await process_send_result(task)
-    else:
-        return {"status": False, "message": f"不支持的消息类型: {message['to']}"}
-
 
 class MessageSender:
     """
@@ -170,9 +121,44 @@ class MessageSenderFactory:
         return cls._senders.values()
 
 
-# 注册消息发送器
-MessageSenderFactory.register_sender("telegram", TelegramMessageSender)
-MessageSenderFactory.register_sender("wechat", WeChatMessageSender)
+@app.route('/', methods=["GET", "POST"])
+def home():
+    """
+    #todo post功能完善
+    :UUID: 用户唯一ID
+    :text: 待发送消息
+    :desp: 消息描述,可不填
+    :to: 发送到:wechat、telegram或者all, 默认telegram
+    :return:
+    """
+    message = dict({})
+    message["UUID"] = request.args.get('uuid')
+    message["text"] = request.args.get('text')
+    message["desp"] = request.args.get('desp')
+    message["to"] = request.args.get('to')
+    try:
+        status = asyncio.run(send_message(message))
+        return jsonify(status)
+    except Exception as e:
+        logging.exception(f'非法消息: {message}, 错误信息: {e}')
+        return jsonify({"status": False, "message": f"An error occurred: {e}"})
+
+
+async def send_message(message) -> dict:
+    """
+    推送消息过去
+    :param message: 见home函数
+    :return:
+    """
+    if not message.get("UUID") or not message.get("text"):
+        return {"status": False, "message": "缺少必要的参数"}
+
+    sender = MessageSenderFactory.get_sender(message["to"])
+    if sender:
+        task = asyncio.create_task(sender.send(message))
+        return await process_send_result(task)
+    else:
+        return {"status": False, "message": f"不支持的消息类型: {message['to']}"}
 
 
 async def process_send_result(task):
@@ -215,7 +201,13 @@ async def process_send_result(task):
     return result
 
 
-if __name__ == '__main__':
-    load_dotenv(dotenv_path=".env", encoding="utf-8")
-    app.config['JSON_AS_ASCII'] = False
-    app.run(debug=True)
+# 设置超时时间（秒）
+TIMEOUT = 10
+
+# 创建 TelegramPushBot 实例
+telegram_bot = tpb()
+
+# 注册消息发送器
+MessageSenderFactory.register_sender("telegram", TelegramMessageSender)
+MessageSenderFactory.register_sender("wechat", WeChatMessageSender)
+
