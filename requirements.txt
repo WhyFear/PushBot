@@ -1,6 +1,6 @@
 Flask==1.1.2
-peewee==3.14.0
+peewee==3.16.0
 requests==2.25.1
 telegram==0.0.1
-python-telegram-bot==13.2
+python-telegram-bot==21.9
 python-dotenv==0.15.0

@@ -7,16 +7,18 @@
 @time: 2021/3/27 0027 17:36
 @desc:
 """
-import re
-import os
-import uuid
 import logging
+import os
+import re
+import uuid
+
 import requests
 import telegram
 from dotenv import load_dotenv
+from telegram.ext import CommandHandler, MessageHandler, CallbackQueryHandler, filters, Application
+
 from bottom import TelegramPushBot
 from bottom.PushDatabase import search
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 load_dotenv(encoding='utf-8')
 token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -30,7 +32,7 @@ FLAG = NORMAL
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def start(update, context):
+async def start(update, context):
     text = """
     "Thanks for using Pakro's Push Bot!"
     /help
@@ -41,7 +43,7 @@ def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
-def help(update, context):
+async def help(update, context):
     text = """
 使用示例:
 https://push.pakro.top/?UUID={UUID}&text={HELLO}&desp={WORLD}&to={telegram}
@@ -54,7 +56,7 @@ notice: '{}'不需要填, 填了会报错
     context.bot.send_message(chat_id=update.effective_chat.id, text=text)
 
 
-def new_user(update, context):
+async def new_user(update, context):
     chat_id = update.effective_chat.id
     is_new_user = True  # 是新用户
 
@@ -76,7 +78,7 @@ def new_user(update, context):
     context.bot.send_message(chat_id=chat_id, text=text)
 
 
-def my_uuid(update, context):
+async def my_uuid(update, context):
     chat_id = update.effective_chat.id
     is_new_user = True  # 是新用户
 
@@ -92,7 +94,7 @@ def my_uuid(update, context):
     context.bot.send_message(chat_id=chat_id, text=text)
 
 
-def echo(update, context):
+async def echo(update, context):
     """所有用户发送的非指令消息都在这里"""
     global FLAG
     if FLAG == CHANGE_UUID:
@@ -100,7 +102,7 @@ def echo(update, context):
         change_uuid(update, context)
 
 
-def bop(update, context):
+async def bop(update, context):
     chat_id = update.effective_chat.id
     context.bot.send_message(chat_id=chat_id, text="正在收集中....")
 
@@ -125,7 +127,7 @@ def bop(update, context):
     bot.send_photo(chat_id=chat_id, photo=url)
 
 
-def unknown(update, context):
+async def unknown(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Sorry, I didn't understand that command:\n" + update.message.text)
 
@@ -136,7 +138,7 @@ def error_handler(update, context, error):
     update.message.reply_text('對不起，似乎服务器出现问题了，正在处理。。。')
 
 
-def test(update, context):
+async def test(update, context):
     """
     重新生成UUID
     :param update:
@@ -166,7 +168,7 @@ def test(update, context):
         update.message.reply_text(text, reply_markup=keyboard)
 
 
-def my_callback_query(update, context):
+async def my_callback_query(update, context):
     if update.callback_query.data == 'generate_new_uuid':
         context.bot.answerCallbackQuery(
             callback_query_id=update.callback_query.id, text="请稍候")
@@ -221,7 +223,7 @@ def change_uuid(update, context):
         update.message.reply_text(user_uuid + "不是一个有效的UUID！请重新输入\n放弃请输入 /stop_register")
 
 
-def stop_register(update, context):
+async def stop_register(update, context):
     """
 
     :param update:
@@ -234,8 +236,7 @@ def stop_register(update, context):
 
 
 def main():
-    updater = Updater(token=token)
-    dp = updater.dispatcher
+    dp = Application.builder().token(token).build()
 
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CommandHandler('help', help))
@@ -244,14 +245,13 @@ def main():
     dp.add_handler(CommandHandler('bop', bop))  # puppy图片
     dp.add_handler(CommandHandler('stop_register', stop_register))
     dp.add_handler(CommandHandler("test", test))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
     dp.add_handler(CallbackQueryHandler(my_callback_query))
-    dp.add_handler(MessageHandler(Filters.command, unknown))  # 未知命令,文档中要求，必须在所有handler最后。
+    dp.add_handler(MessageHandler(filters.COMMAND, unknown))  # 未知命令,文档中要求，必须在所有handler最后。
     dp.add_error_handler(error_handler)
     # push_bot(user_uuid=os.getenv("MY_UUID"),
     #          text="Bot start successfully! Welcome!")
-    updater.start_polling()
-    updater.idle()
+    dp.run_polling(allowed_updates=telegram.Update.ALL_TYPES)
 
 
 if __name__ == '__main__':

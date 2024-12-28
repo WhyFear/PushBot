@@ -11,7 +11,7 @@ import os
 import time
 
 import requests
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 from bottom import MyErrors
 
@@ -20,7 +20,7 @@ try:
 except:
     from .PushDatabase import search
 
-load_dotenv(encoding='utf-8')  # 读取本地变量
+# load_dotenv(encoding='utf-8')  # 读取本地变量
 WECHAT_KEY = os.getenv("WECHAT_KEY")
 WEBHOOK_URL = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='
 WECOM_URL = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token='

@@ -7,8 +7,9 @@
 @desc:
 """
 import os
-from peewee import *
+
 from dotenv import load_dotenv
+from peewee import *
 
 load_dotenv(encoding='utf-8')
 
