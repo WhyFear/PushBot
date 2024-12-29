@@ -4,6 +4,8 @@ FROM python:3.10-slim-buster
 # 设置工作目录
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y build-essential libpq-dev
+
 # 复制 requirements.txt 文件到容器中
 COPY requirements.txt .
 
