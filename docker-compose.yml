@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web:
+    image: pakro888/pushbot:latest
+    ports:
+      - "7874:7874"
+    volumes:
+      - ./.env:/app/.env # 将宿主机的 .env 文件挂载到容器的 /app/.env
+    environment:
+      - ENV_FILE=/app/.env # 设置环境变量文件路径
