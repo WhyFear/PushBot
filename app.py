@@ -35,18 +35,37 @@ class TelegramMessageSender(MessageSender):
     Telegram 消息发送器
     """
 
+    def __init__(self):
+        """
+        :param self: TelegramMessageSender 对象
+        :return: 无
+        :rtype: None
+        :desc: 初始化 TelegramMessageSender 对象
+        """
+        self.telegram_bot = tpb()
+
     async def send(self, message):
+        """
+        Sends a message to a Telegram user using the Telegram bot.
+
+        :param message: A dictionary containing the message details with keys:
+                        - "UUID": User UUID
+                        - "text": Message content
+                        - "desp": (optional) Message description
+        :return: A tuple (is_send, error) where:
+                - is_send: True if the message was sent successfully, False otherwise
+                - error: None if successful, or an error message if an exception occurred
+        """
         try:
-            is_send = await asyncio.wait_for(
-                telegram_bot.push_bot(message["UUID"], message["text"], message.get("desp")), timeout=TIMEOUT)
+            # 使用 asyncio.create_task 提交 push_bot 任务到事件循环中，并使用 await 等待任务完成
+            is_send = await asyncio.create_task(
+                self.telegram_bot.push_bot(message["UUID"], message["text"], message.get("desp"))
+            )
             if is_send:
                 logger.info(f"Telegram 消息发送成功: {message}")
             else:
                 logger.warning(f"Telegram 消息发送失败: {message}")
             return is_send, None
-        except asyncio.TimeoutError:
-            logger.error(f"Telegram消息发送超时: {message}")
-            return False, "Telegram消息发送超时"
         except Exception as e:
             logger.exception(f"Telegram 消息发送失败: {message}, 错误: {e}")
             return False, f"Telegram 消息发送失败: {e}"
@@ -204,10 +223,6 @@ async def process_send_result(task):
 # 设置超时时间（秒）
 TIMEOUT = 10
 
-# 创建 TelegramPushBot 实例
-telegram_bot = tpb()
-
 # 注册消息发送器
 MessageSenderFactory.register_sender("telegram", TelegramMessageSender)
 MessageSenderFactory.register_sender("wechat", WeChatMessageSender)
-
