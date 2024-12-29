@@ -11,6 +11,7 @@ COPY requirements.txt .
 
 # 安装项目依赖
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install "python-telegram-bot[socks]"
 
 # 复制项目代码到容器中
 COPY . .
