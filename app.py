@@ -222,7 +222,6 @@ async def process_send_result(task):
 # 设置超时时间（秒）
 TIMEOUT = 10
 
-
 # 注册消息发送器
 MessageSenderFactory.register_sender("telegram", TelegramMessageSender)
 MessageSenderFactory.register_sender("wechat", WeChatMessageSender)
