@@ -9,7 +9,6 @@
 import asyncio
 import logging
 
-from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 
 from bottom import WeChatPushBot

@@ -19,6 +19,7 @@ token = os.getenv("TELEGRAM_BOT_TOKEN")
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def register(user_uuid, chat_id) -> dict:
     user_dict = {"UUID": user_uuid, "telegram": chat_id}
     try:
