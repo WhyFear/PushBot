@@ -150,10 +150,18 @@ def home():
     :return:
     """
     message = dict({})
-    message["UUID"] = request.args.get('uuid')
-    message["text"] = request.args.get('text')
-    message["desp"] = request.args.get('desp')
-    message["to"] = request.args.get('to')
+    if request.method == "POST":
+        # 尝试获取 JSON 数据
+        data = request.get_json()
+        message["UUID"] = data.get('uuid')
+        message["text"] = data.get('text')
+        message["desp"] = data.get('desp')
+        message["to"] = data.get('to')
+    else:  # GET 请求
+        message["UUID"] = request.args.get('uuid')
+        message["text"] = request.args.get('text')
+        message["desp"] = request.args.get('desp')
+        message["to"] = request.args.get('to')
     try:
         status = asyncio.run(send_message(message))
         return jsonify(status)
