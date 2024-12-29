@@ -22,4 +22,4 @@ EXPOSE 7874
 ENV ENV_FILE /app/.env
 
 # 运行命令
-CMD ["gunicorn", "--env", "ENV_FILE", "--bind", "0.0.0.0:7874", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:7874", "app:app"]
