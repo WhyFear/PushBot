@@ -4,3 +4,4 @@ psycopg2==2.9.10
 python-dotenv==1.0.1
 python-telegram-bot==21.9
 gunicorn==23.0.0
+requests==2.32.3
